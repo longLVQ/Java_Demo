@@ -9,7 +9,15 @@
     <select id="selectAllStudent" resultMap="result">
         SELECT * FROM TBL_EMPLOYEES;
     </select>
-    
+
+	<update id="updateMutiRecord" parameterType="java.util.List">
+		<foreach collection="list" item="student" index="index"
+			separator=";">
+			update TBL_EMPLOYEES set email = #{student.email}
+			where id = #{student.id}
+		</foreach>
+	</update>
+	
      <resultMap id = "result" type = "com.longlvq.mybatis_h2db.entity.PerSonEntity">
        <result property = "id" column = "id"/>
        <result property = "first_name" column = "first_name"/>

@@ -8,4 +8,5 @@ import com.longlvq.mybatis_h2db.entity.PerSonEntity;
 public interface PerSonRepository {
     public PerSonEntity selectStudentById(int studentId);
     public List<PerSonEntity> selectAllStudent();
+    public int updateMutiRecord(List<PerSonEntity> listStr);
 }
