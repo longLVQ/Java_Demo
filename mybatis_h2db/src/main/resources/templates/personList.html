@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<title>Person List</title>
+</head>
+<body>
+	<h1>Person List</h1>
+	<a href="addPerson">Add Person</a>
+	<br />
+	<br />
+	<div>
+		<table>
+			<tr>
+				<th>First Name</th>
+				<th>Last Name</th>
+			</tr>
+			<tr th:each="person : ${perSonForm.perSonEntityList}">
+				<td th:text="${person.first_name}">...</td>
+				<td th:text="${person.last_name}">...</td>
+			</tr>
+		</table>
+	</div>
+	
+	<h1>Person Update List</h1>
+	<form method="post" th:action="@{/thymeleaf/update-muti}"
+		th:object="${perSonForm}">
+		<table class="table table-striped table-hover form-narrow ">
+			<thead>
+				<tr>
+					<th>No</th>
+					<th>First Name</th>
+					<th>Last Name</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- Table Inscriptions -->
+				<tr th:each="person,stat : *{perSonEntityList}">
+					<td th:text="${stat.index}"></td>
+					<input th:field="*{perSonEntityList[__${stat.index}__].id}"  style="display: none;" />
+					<td><input th:field="*{perSonEntityList[__${stat.index}__].first_name}" type="text" th:value="${person.first_name}" /></td>
+					<td><input type="text" th:field="*{perSonEntityList[__${stat.index}__].last_name}"   th:value="${person.last_name}"/></td>
+				</tr>
+			</tbody>
+		</table>
+		<!-- Button Modify, visible if a checkbox enable is pressed -->
+		<div class="text-center">
+			<button type="submit" class="btn btn-success btn-lg">Submit</button>
+		</div>
+	</form>
+</body>
+</html>

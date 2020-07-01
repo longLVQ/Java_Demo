@@ -13,7 +13,8 @@
 	<update id="updateMutiRecord" parameterType="java.util.List">
 		<foreach collection="list" item="student" index="index"
 			separator=";">
-			update TBL_EMPLOYEES set email = #{student.email}
+			update TBL_EMPLOYEES set email = #{student.email}, 
+			first_name = #{student.first_name}, last_name =  #{student.last_name}
 			where id = #{student.id}
 		</foreach>
 	</update>
