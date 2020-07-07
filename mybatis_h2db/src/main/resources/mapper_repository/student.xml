@@ -14,7 +14,12 @@
 		<foreach collection="list" item="student" index="index"
 			separator=";">
 			update TBL_EMPLOYEES set email = #{student.email}, 
-			first_name = #{student.first_name}, last_name =  #{student.last_name}
+			first_name = #{student.first_name}, last_name =  #{student.last_name},
+			<if test="student.word_cnt != null and student.word_cnt > 0 ">
+				<foreach separator="," collection="student.wordCntTempList" item="wordCntIndex" index="index">
+					${'data' + wordCntIndex} = #{student.${'data'+ wordCntIndex}}
+				</foreach>
+			</if>
 			where id = #{student.id}
 		</foreach>
 	</update>
@@ -24,5 +29,10 @@
        <result property = "first_name" column = "first_name"/>
        <result property = "last_name" column = "last_name"/>
        <result property = "email" column = "email"/>
+       <result property = "word_cnt" column = "word_cnt"/>
+       <result property = "data1" column = "data1"/>
+       <result property = "data2" column = "data2"/>
+       <result property = "data3" column = "data3"/>
+       <result property = "data4" column = "data4"/>
     </resultMap>
 </mapper>

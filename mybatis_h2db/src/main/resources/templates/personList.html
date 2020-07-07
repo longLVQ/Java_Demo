@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>Person List</title>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
 </head>
 <body>
 	<h1>Person List</h1>
@@ -15,32 +16,50 @@
 				<th>First Name</th>
 				<th>Last Name</th>
 			</tr>
+			<th:block th:if="${perSonForm != null}">
 			<tr th:each="person : ${perSonForm.perSonEntityList}">
 				<td th:text="${person.first_name}">...</td>
 				<td th:text="${person.last_name}">...</td>
 			</tr>
+			</th:block>
+			
 		</table>
 	</div>
 	
 	<h1>Person Update List</h1>
 	<form method="post" th:action="@{/thymeleaf/update-muti}"
-		th:object="${perSonForm}">
+		th:object="${perSonForm}" id="perSonFormId">
 		<table class="table table-striped table-hover form-narrow ">
 			<thead>
 				<tr>
 					<th>No</th>
 					<th>First Name</th>
 					<th>Last Name</th>
+					<th:block th:each="i : ${#numbers.sequence(1, maxCnt)}">
+						<th th:text="${'data' + i}">
+						</th>
+					</th:block>
+					
 				</tr>
 			</thead>
 			<tbody>
 				<!-- Table Inscriptions -->
-				<tr th:each="person,stat : *{perSonEntityList}">
+				<th:block th:if="${perSonForm != null}">
+				<tr th:each="person,stat : *{perSonEntityList}"  th:data-name="${person.first_name}"
+				th:data-id="${person.id}" th:id="${'personRow-' + stat.index}" th:onclick="onlickRow(this.getAttribute('data-id'),this.getAttribute('data-name'))">
 					<td th:text="${stat.index}"></td>
 					<input th:field="*{perSonEntityList[__${stat.index}__].id}"  style="display: none;" />
+					<input th:field="*{perSonEntityList[__${stat.index}__].word_cnt}"  style="display: none;" />
 					<td><input th:field="*{perSonEntityList[__${stat.index}__].first_name}" type="text" th:value="${person.first_name}" /></td>
 					<td><input type="text" th:field="*{perSonEntityList[__${stat.index}__].last_name}"   th:value="${person.last_name}"/></td>
-				</tr>
+					<th:block th:each="i : ${#numbers.sequence(1, maxCnt)}">
+					<div th:with="dataColumn=${'data'+i}">
+						<th:block th:if="${person[dataColumn] !=null && person[dataColumn]  != ''}">
+						<td><input th:field="*{perSonEntityList[__${stat.index}__].__${dataColumn}__}" th:value="${person[dataColumn]}"/> </td></th:block>
+						<th:block th:if="${person[dataColumn] == null || person[dataColumn] == ''}"><td>longlvq </td></th:block>
+					</th:block>
+					</tr>
+				</th:block>
 			</tbody>
 		</table>
 		<!-- Button Modify, visible if a checkbox enable is pressed -->
@@ -48,5 +67,70 @@
 			<button type="submit" class="btn btn-success btn-lg">Submit</button>
 		</div>
 	</form>
+	<script  th:inline="javascript">
+		var formPersonOld = [[${perSonForm}]];
+		console.log(formPersonOld);
+		function executeUpdateMutiPerson(){
+			perSonlistUpdate = $('#perSonFormId').serializeArray().reduce(function(a, x) { a[x.name] = x.value; return a; }, {});
+			console.log("perSonlistUpdate",perSonlistUpdate);
+			removeDataNotUpdate(perSonlistUpdate);
+			  $.ajax({
+		            type: 'POST',
+		            url: [[@{/thymeleaf/update-muti}]],
+		            data: perSonlistUpdate,
+		            success : function (data){
+						console.log("success");
+		            },
+		            error: function(xhr, error){
+		                console.debug(xhr); console.debug(error);
+		            }
+		        });
+		}
+		
+		function removeDataNotUpdate(perSonlistUpdate){
+			let perSonListOld = formPersonOld.perSonEntityList;
+			console.log("perSonListOld",perSonListOld)
+			let check = perSonListOld && perSonListOld.length  > 0 && perSonlistUpdate
+			let perSonUpdateNew = {};
+			if(check){
+				for(let i = perSonListOld.length - 1;i >= 0 ; i--){
+					if(perSonListOld[i].word_cnt && perSonListOld[i].word_cnt > 0){
+					console.log(perSonlistUpdate['perSonEntityList['+ (i-1)+ '].word_cnt'])
+						if(perSonListOld[i].word_cnt != perSonlistUpdate['perSonEntityList['+ i+ '].word_cnt']){
+							//perSonlistUpdate.splice(i, 1);
+							continue;
+						}
+						let dataOldListStr ="";
+						let dataUpdateListStr = "";
+						for(let j = 1;j <=  perSonListOld[i].word_cnt; j++){
+							dataOldListStr += "," + perSonListOld[i]['data' + j];
+							dataUpdateListStr += "," + perSonlistUpdate['perSonEntityList['+ i + '].data'+j];
+						}
+						let indexItemUpdate = 0;
+						
+						if(dataOldListStr != dataUpdateListStr){
+							for(let j = 1;j <=  perSonListOld[i].word_cnt; j++){
+								perSonUpdateNew['perSonEntityList['+ i + '].data' + j] = perSonlistUpdate['perSonEntityList['+ i + '].data' + j];
+							}
+							perSonUpdateNew['perSonEntityList['+ i+ '].first_name'] = perSonlistUpdate['perSonEntityList['+ i+ '].first_name'] ; 
+							perSonUpdateNew['perSonEntityList['+ i+ '].id'] = perSonlistUpdate['perSonEntityList['+ i+ '].id'] ; 
+							perSonUpdateNew['perSonEntityList['+ i+ '].last_name'] = perSonlistUpdate['perSonEntityList['+ i+ '].last_name'] ; 
+							perSonUpdateNew['perSonEntityList['+ i+ '].word_cnt'] = perSonlistUpdate['perSonEntityList['+ i+ '].word_cnt'] ; 
+							indexItemUpdate ++;
+						}
+					}
+				}
+			}
+			perSonlistUpdate = perSonUpdateNew;
+			console.log("remove",perSonlistUpdate);
+		}
+		function onlickRow(id,firstName){
+			console.log(id + firstName);
+		}
+		$(document).ready(function() {
+			console.log("longvq")
+			document.getElementById("personRow-0").onclick();
+		});
+	</script>
 </body>
 </html>
